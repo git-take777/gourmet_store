@@ -1,0 +1,145 @@
+# 共通の制約を定義
+anchors:
+  python_constraints: &python_constraints
+    - 'PEP 8スタイルガイドに従うこと'
+    - 'type hintを使用すること'
+    - '非同期処理にはasyncio/aioを使用すること'
+    - 'ユニットテストを作成すること（カバレッジ80%以上）'
+    - 'パフォーマンス最適化（非同期処理、キャッシュなど）を行うこと'
+
+  minecraft_constraints: &minecraft_constraints
+    - 'Minecraft APIとの互換性を確保すること'
+    - 'サーバーパフォーマンスへの影響を最小限に抑えること'
+    - 'マルチスレッド対応を実装すること'
+    - 'プラグインAPIの仕様に準拠すること'
+
+  security_constraints: &security_constraints
+    - 'HTTPS通信を強制すること'
+    - 'OAuth2.0による認証を実装すること'
+    - 'データの暗号化（転送中および保存時）を行うこと'
+    - 'OWASP Top 10に対応すること'
+
+  next_constraints: &next_constraints
+    - 'Next.js 13以上を使用すること'
+    - 'TypeScriptを使用すること'
+    - 'Server ComponentsとClient Componentsを適切に使い分けること'
+    - 'レスポンシブデザインを実装すること'
+    - 'SEO対策を実装すること'
+
+rules:
+  # バックエンド規則
+  '^backend/.*\.py$':
+    - *python_constraints
+    - *minecraft_constraints
+    - *security_constraints
+    - 'main.py': |
+        FastAPIアプリケーションの初期化
+        マインクラフトサーバー接続の確立
+        エフェクトマネージャーの初期化
+        APIルーターの登録
+        エラーハンドリングの実装
+        CORSミドルウェアの設定
+
+    - '^backend/app/api/effects/.*\.py$':
+      - 'router.py': |
+          依存:
+            - services.effect_service
+            - schemas.effect
+            - core.minecraft
+          エンドポイント:
+            - POST /effects/create
+            - GET /effects/list
+            - PUT /effects/{effect_id}
+            - DELETE /effects/{effect_id}
+          クラス:
+            - EffectManager:
+                - create_effect(effect_data: EffectCreate) -> Effect
+                - get_effects() -> List[Effect]
+                - update_effect(effect_id: str, data: EffectUpdate) -> Effect
+                - delete_effect(effect_id: str) -> Message
+            - ParticleHandler:
+                - spawn_particles(location: Location, effect: Effect) -> None
+                - update_particles(effect_id: str, params: ParticleParams) -> None
+            - SoundHandler:
+                - play_sound(location: Location, sound: SoundEffect) -> None
+                - stop_sound(effect_id: str) -> None
+
+  # フロントエンド規則
+  '^frontend/.*\.(ts|tsx)$':
+    - *next_constraints
+    - 'app/layout.tsx': |
+        依存:
+          - components/Layout
+          - contexts/AuthContext
+          - styles/globals.css
+        機能:
+          - RootLayoutの定義
+          - メタデータの設定
+          - プロバイダーの設定
+
+    - 'app/effects/page.tsx': |
+        依存:
+          - components/EffectList
+          - components/EffectForm
+          - services/api/effects
+        機能:
+          - エフェクト一覧表示
+          - エフェクト作成フォーム
+          - Server-side Rendering
+
+    - 'components/EffectList.tsx': |
+        依存:
+          - services/api/effects
+          - types/Effect
+        機能:
+          - エフェクトの一覧表示
+          - ページネーション
+          - フィルタリング
+
+    - 'services/api/effects.ts': |
+        依存:
+          - types/Effect
+          - utils/api
+        関数:
+          - fetchEffects(): Promise<Effect[]>
+          - createEffect(data: EffectCreate): Promise<Effect>
+          - updateEffect(id: string, data: EffectUpdate): Promise<Effect>
+          - deleteEffect(id: string): Promise<void>
+
+    - 'types/Effect.ts': |
+        インターフェース:
+          - Effect
+          - EffectCreate
+          - EffectUpdate
+          - ParticleEffect
+          - SoundEffect
+
+データ連携:
+  backend_to_frontend:
+    - 'effects.ts -> EffectList.tsx':
+        - エフェクト一覧データ
+        - エフェクトステータス更新
+    - 'triggers.ts -> TriggerList.tsx':
+        - トリガー一覧データ
+        - トリガーステータス更新
+    - 'websocket.ts -> EffectViewer.tsx':
+        - リアルタイムエフェクト更新
+        - ステータス通知
+
+non_functional_requirements:
+  performance:
+    - 'エフェクト処理の最適化（60FPS以上を維持）'
+    - 'サーバーリソース使用の効率化'
+    - '同時実行エフェクトの制限と管理'
+  scalability:
+    - '複数ワールドでの同時実行対応'
+    - 'プレイヤー数増加への対応'
+    - 'エフェクトの同時発動数のスケーリング'
+  reliability:
+    - 'エフェクト実行の安定性確保'
+    - 'クラッシュ時の自動リカバリ'
+    - 'バックアップと復元機能'
+  frontend_specific:
+    - 'First Contentful Paint 1.5秒以内'
+    - 'Time to Interactive 2秒以内'
+    - 'Lighthouse スコア90以上'

@@ -1,0 +1,200 @@
+- backend:
+    - app:
+        - api:
+            - magic_effects:
+                - __init__.py: "魔法エフェクトAPIの初期化ファイル。
+                               依存:
+                                 - core.minecraft_bridge
+                                 - core.effect_engine
+                               エクスポート:
+                                 - router
+                               クラス:
+                                 - EffectConfig: エフェクト設定管理
+                                   関数:
+                                     - load_presets(): プリセットエフェクト読み込み
+                                     - validate_effect_params(): パラメータ検証
+                               関数:
+                                 - initialize_effects(): エフェクトシステム初期化
+                                 - setup_minecraft_connection(): マインクラフト接続設定"
+                - router.py: "魔法エフェクトAPIルートを定義するファイル。
+                            依存:
+                              - services.effect_service
+                              - schemas.effect
+                              - core.minecraft_bridge
+                            エンドポイント:
+                              - POST /effects/create
+                              - GET /effects/presets
+                              - POST /effects/trigger
+                              - PUT /effects/{effect_id}
+                              - DELETE /effects/{effect_id}
+                            クラス:
+                              - EffectController: エフェクト制御ハンドラ
+                                関数:
+                                  - create_effect(effect_data: EffectCreate) -> Effect
+                                  - get_presets() -> List[EffectPreset]
+                                  - trigger_effect(effect_id: str, trigger_data: TriggerData) -> EffectResult
+                                  - update_effect(effect_id: str, effect_data: EffectUpdate) -> Effect
+                                  - delete_effect(effect_id: str) -> Message"
+            - event_triggers:
+                - __init__.py: "イベントトリガーAPIの初期化ファイル。
+                               依存:
+                                 - core.event_system
+                                 - services.trigger_service
+                               エクスポート:
+                                 - router
+                               クラス:
+                                 - TriggerConfig: トリガー設定管理
+                                   関数:
+                                     - register_event_types(): イベントタイプ登録
+                                     - setup_listeners(): リスナー設定
+                               関数:
+                                 - initialize_triggers(): トリガーシステム初期化"
+                - router.py: "イベントトリガーAPIルートを定義するファイル。
+                            依存:
+                              - services.trigger_service
+                              - schemas.trigger
+                            エンドポイント:
+                              - POST /triggers/create
+                              - GET /triggers/list
+                              - PUT /triggers/{trigger_id}
+                              - DELETE /triggers/{trigger_id}
+                            クラス:
+                              - TriggerController: トリガー制御ハンドラ
+                                関数:
+                                  - create_trigger(trigger_data: TriggerCreate) -> Trigger
+                                  - list_triggers(user_id: str) -> List[Trigger]
+                                  - update_trigger(trigger_id: str, trigger_data: TriggerUpdate) -> Trigger
+                                  - delete_trigger(trigger_id: str) -> Message"
+            - auth:
+                - __init__.py: "認証APIの初期化ファイル。
+                               依存:
+                                 - core.security
+                                 - core.config
+                               エクスポート:
+                                 - router
+                               クラス:
+                                 - AuthConfig: 認証設定管理
+                                   関数:
+                                     - setup_api_keys(): APIキー設定
+                                     - configure_oauth(): OAuth設定
+                               関数:
+                                 - initialize_auth(): 認証初期化"
+                - router.py: "認証APIルートを定義するファイル。
+                            依存:
+                              - services.auth_service
+                              - schemas.auth
+                            エンドポイント:
+                              - POST /auth/api-key
+                              - POST /auth/validate
+                              - DELETE /auth/revoke
+                            クラス:
+                              - AuthController: 認証制御ハンドラ
+                                関数:
+                                  - generate_api_key(user_data: UserCreate) -> ApiKey
+                                  - validate_token(token: str) -> ValidationResult
+                                  - revoke_token(token: str) -> Message"
+        - core:
+            - __init__.py: "コアモジュールの初期化ファイル。"
+            - minecraft_bridge.py: "マインクラフトサーバーとの接続を管理するファイル。
+                                  クラス:
+                                    - MinecraftConnection: マインクラフト接続管理
+                                      関数:
+                                        - connect(): サーバー接続
+                                        - send_effect(): エフェクト送信
+                                        - listen_events(): イベントリスニング"
+            - effect_engine.py: "エフェクト生成エンジンを実装するファイル。
+                               クラス:
+                                 - EffectEngine: エフェクト生成エンジン
+                                   関数:
+                                     - create_particle_effect(): パーティクル生成
+                                     - create_sound_effect(): サウンド生成
+                                     - create_light_effect(): 光効果生成"
+            - event_system.py: "イベントシステムを実装するファイル。
+                              クラス:
+                                - EventSystem: イベント管理システム
+                                  関数:
+                                    - register_handler(): ハンドラー登録
+                                    - process_event(): イベント処理
+                                    - trigger_effect(): エフェクト発動"
+            - security.py: "セキュリティ機能を実装するファイル。
+                          クラス:
+                            - SecurityManager: セキュリティ管理
+                              関数:
+                                - validate_request(): リクエスト検証
+                                - encrypt_data(): データ暗号化
+                                - generate_token(): トークン生成"
+        - models:
+            - __init__.py: "モデルの初期化ファイル。"
+            - effect.py: "エフェクトモデルを定義するファイル。
+                         クラス:
+                           - Effect: エフェクトモデル
+                           - EffectPreset: プリセットモデル
+                           - EffectParameter: パラメータモデル"
+            - trigger.py: "トリガーモデルを定義するファイル。
+                         クラス:
+                           - Trigger: トリガーモデル
+                           - EventCondition: 条件モデル
+                           - TriggerAction: アクションモデル"
+            - user.py: "ユーザーモデルを定義するファイル。
+                       クラス:
+                         - User: ユーザーモデル
+                         - ApiKey: APIキーモデル
+                         - Permission: 権限モデル"
+        - schemas:
+            - __init__.py: "スキーマの初期化ファイル。"
+            - effect.py: "エフェクトスキーマを定義するファイル。
+                         クラス:
+                           - EffectCreate: エフェクト作成スキーマ
+                           - EffectUpdate: エフェクト更新スキーマ
+                           - EffectResponse: エフェクトレスポンススキーマ"
+            - trigger.py: "トリガースキーマを定義するファイル。
+                         クラス:
+                           - TriggerCreate: トリガー作成スキーマ
+                           - TriggerUpdate: トリガー更新スキーマ
+                           - TriggerResponse: トリガーレスポンススキーマ"
+            - auth.py: "認証スキーマを定義するファイル。
+                       クラス:
+                         - ApiKeyCreate: APIキー作成スキーマ
+                         - TokenValidation: トークン検証スキーマ
+                         - AuthResponse: 認証レスポンススキーマ"
+- frontend:
+    - app:
+        - page.tsx: "メインページコンポーネント。
+                    依存:
+                      - components/EffectList
+                      - components/TriggerList
+                      - lib/api/effects
+                      - lib/api/triggers"
+        - layout.tsx: "レイアウトコンポーネント。
+                      依存:
+                        - components/Navigation
+                        - components/Footer"
+    - components:
+        - EffectList.tsx: "エフェクト一覧コンポーネント。
+                          依存:
+                            - lib/api/effects
+                            - backend.schemas.effect"
+        - TriggerList.tsx: "トリガー一覧コンポーネント。
+                           依存:
+                             - lib/api/triggers
+                             - backend.schemas.trigger"
+        - Navigation.tsx: "ナビゲーションコンポーネント。"
+        - Footer.tsx: "フッターコンポーネント。"
+    - lib:
+        - api:
+            - effects.ts: "エフェクトAPI呼び出し関数。
+                         依存:
+                           - backend.api.magic_effects.router"
+            - triggers.ts: "トリガーAPI呼び出し関数。
+                          依存:
+                            - backend.api.event_triggers.router"
+            - auth.ts: "認証API呼び出し関数。
+                       依存:
+                         - backend.api.auth.router"
+        - hooks:
+            - useEffects.ts: "エフェクト関連カスタムフック。
+                             依存:
+                               - lib/api/effects"
+            - useTriggers.ts: "トリガー関連カスタムフック。
+                             依存:
+                               - lib/api/triggers"
